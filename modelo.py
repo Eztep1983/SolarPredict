@@ -3,7 +3,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Conv1D, Flatten, Dense
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.layers import MaxPooling1D
 import matplotlib.pyplot as plt
 
 df_X = pd.read_csv('x.csv')
@@ -29,17 +31,28 @@ X = scaler_X.fit_transform(X)
 Y = scaler_Y.fit_transform(Y)
 
 #DIVIDIR EN CONJUNTO DE ENTRENAMIENTO Y PRUEBA 
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=42)
+
+#REMODELAR LOS DATOS PARA CONV1D
+X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
+X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
 #MODELO
-model = Sequential([
-    Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
-    Dense(32, activation='relu'),
-    Dense(1)  #SALIDA PARA LA PRODUCCION DE ENERGIA SOLAR
-])
+model = Sequential()
+
+model.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train.shape[1],1)))
+model.add(MaxPooling1D(pool_size=2))
+model.add(Flatten())
+model.add(Dense(64, activation= 'relu'))
+model.add(Dense(32, activation= 'relu'))
+model.add(Dense(15, activation= 'relu'))
+model.add(Dense(1, activation='linear'))
+
+learning_rate= 0.001
+adam_optimizer= Adam(learning_rate= learning_rate)
 
 #COMPILAR EL MODELO
-model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+model.compile(optimizer=adam_optimizer, loss='mse', metrics=['mae'])
 
 #ENTRENAMIENTO DEL MODELO
 history = model.fit(X_train, y_train, validation_split=0.2, epochs=100, batch_size=64, verbose=1)
