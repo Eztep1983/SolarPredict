@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv1D, Flatten, Dense
+from tensorflow.keras.layers import Conv1D, Flatten, Dense, LeakyReLU
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import MaxPooling1D
 import matplotlib.pyplot as plt
@@ -31,23 +31,24 @@ X = scaler_X.fit_transform(X)
 Y = scaler_Y.fit_transform(Y)
 
 #DIVIDIR EN CONJUNTO DE ENTRENAMIENTO Y PRUEBA 
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.9, random_state=42)
 
 #REMODELAR LOS DATOS PARA CONV1D
 X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
 X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
 
-#MODELO
 model = Sequential()
 
-model.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train.shape[1],1)))
+model.add(Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train.shape[1], 1)))
 model.add(MaxPooling1D(pool_size=2))
 model.add(Flatten())
-model.add(Dense(64, activation= 'relu'))
-model.add(Dense(32, activation= 'relu'))
-model.add(Dense(15, activation= 'relu'))
+model.add(Dense(64))
+model.add(LeakyReLU(alpha=0.01))  # Añadir Leaky ReLU después de la capa densa
+model.add(Dense(12))
+model.add(LeakyReLU(alpha=0.01))  # Añadir Leaky ReLU después de la capa densa
+model.add(Dense(32, activation='relu'))
+model.add(Dense(40, activation='relu'))
 model.add(Dense(1, activation='linear'))
-
 learning_rate= 0.001
 adam_optimizer= Adam(learning_rate= learning_rate)
 
@@ -55,7 +56,7 @@ adam_optimizer= Adam(learning_rate= learning_rate)
 model.compile(optimizer=adam_optimizer, loss='mse', metrics=['mae'])
 
 #ENTRENAMIENTO DEL MODELO
-history = model.fit(X_train, y_train, validation_split=0.2, epochs=100, batch_size=64, verbose=1)
+history = model.fit(X_train, y_train, validation_split=0.2, epochs=100, batch_size=15, verbose=1)
 
 #EVALUACION DEL MODELO
 loss, mae = model.evaluate(X_test, y_test)
