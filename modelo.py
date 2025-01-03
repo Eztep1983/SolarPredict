@@ -8,8 +8,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import MaxPooling1D
 import matplotlib.pyplot as plt
 
-df_X = pd.read_csv('x.csv')
-df_Y = pd.read_csv('y.csv')
+df_X = pd.read_csv('data/x.csv')
+df_Y = pd.read_csv('data/y.csv')
 
 #CONVERTIR LAS FECHAS EN FORMATO DATETIME
 df_X['period_end'] = pd.to_datetime(df_X['period_end'])
